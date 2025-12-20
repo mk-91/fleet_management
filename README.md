@@ -32,11 +32,11 @@ Aplikacja konsolowa (tekstowa) z prostym menu, np.:
   - marka, model, numer rejestracyjny (unikalny), kolor, rok produkcji
   - termin ważności OC, termin ważności badań technicznych
   - użytkownik (User)
-  - listy: "List<MileageEntry>", "List<RepairEntry>"
-  - metoda abstrakcyjna: getVehicleType()
+  - listy: `List<MileageEntry>`,`List<RepairEntry>`
+  - metoda abstrakcyjna: `getVehicleType()`
   - metody: sprawdzenie krytycznych terminów, dodawanie wpisów historii
 2. Car (Samochód) – dziedziczy po Vehicle
-  - implementacja metody getVehicleType()
+  - implementacja metody `getVehicleType()`
 3. User (Użytkownik pojazdu)
   - imię, nazwisko, numer telefonu
 4. MileageEntry (Wpis przebiegu)
@@ -53,12 +53,12 @@ Aplikacja konsolowa (tekstowa) z prostym menu, np.:
 7. Repository<T> (interfejs)
   - metody: save, findById, findAll, delete
 8. FleetRepository
-  - implementuje Repository<Vehicle>
+  - implementuje `Repository<Vehicle>`
   - przechowuje pojazdy w kolekcji
   - statyczne pole do generowania identyfikatorów
 9. VehicleType (enum)
-  - np. CAR
-  - umożliwia łatwe rozszerzenie systemu o inne typy pojazdów (np. TRUCK)
+  - np. CAR, TRUCK
+  - umożliwia łatwe rozszerzenie systemu o inne typy pojazdów
 10. Color (enum)
   - predefiniowane kolory pojazdów
 11. DuplicateRegistrationException
