@@ -3,6 +3,7 @@ package fleet_management.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import fleet_management.exceptions.InvalidMileageException;
 
 public abstract class Vehicle {
     private static long idCounter = 1;
@@ -37,6 +38,14 @@ public abstract class Vehicle {
     public abstract VehicleType getVehicleType();
 
     public void addMileage(MileageEntry entry) {
+        // Jeśli lista nie jest pusta, sprawdzamy ostatni wpis
+        if (!mileageHistory.isEmpty()) {
+            MileageEntry lastEntry = mileageHistory.get(mileageHistory.size() - 1);
+            if (entry.getMileage() < lastEntry.getMileage()) {
+                throw new InvalidMileageException("Nowy przebieg (" + entry.getMileage() + 
+                        ") nie może być mniejszy niż poprzedni (" + lastEntry.getMileage() + ")!");
+            }
+        }
         this.mileageHistory.add(entry);
     }
 
@@ -52,8 +61,20 @@ public abstract class Vehicle {
     public String toString() {
         return id + ". " + brand + " " + model + " [" + registrationNumber + "]";
     }
+    
+    public String getRegistrationNumber() {
+        return registrationNumber;
+    }
 
     public long getId() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return id;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public String getModel() {
+        return model;
     }
 }

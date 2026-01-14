@@ -4,6 +4,7 @@ import fleet_management.model.Vehicle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import fleet_management.exceptions.DuplicateRegistrationException;
 
 public class FleetRepository implements Repository<Vehicle> {
     
@@ -12,7 +13,12 @@ public class FleetRepository implements Repository<Vehicle> {
 
     @Override
     public void save(Vehicle vehicle) {
-        // Tu w przyszłości dodamy sprawdzanie duplikatów tablic (wymóg z README)
+        // Sprawdzamy, czy auto z taką rejestracją już jest na liście
+        for (Vehicle v : vehicles) {
+            if (v.getRegistrationNumber().equals(vehicle.getRegistrationNumber())) {
+                throw new DuplicateRegistrationException("Pojazd o numerze " + vehicle.getRegistrationNumber() + " już istnieje!");
+            }
+        }
         vehicles.add(vehicle);
     }
 

@@ -14,4 +14,8 @@ public class MileageEntry {
     public String toString() {
         return date + ": " + mileage + " km";
     }
+
+    public long getMileage() {
+        return mileage;
+    }
 }

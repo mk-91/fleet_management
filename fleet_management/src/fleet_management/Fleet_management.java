@@ -3,36 +3,36 @@ package fleet_management;
 import fleet_management.model.*;
 import fleet_management.repositories.FleetRepository;
 import fleet_management.repositories.Repository;
+import fleet_management.exceptions.*; // Importujemy nasze wyjątki
 import java.time.LocalDate;
 
 public class Fleet_management {
 
     public static void main(String[] args) {
-        System.out.println("--- Test Repozytorium ---");
-
-        // 1. Tworzymy repozytorium (nasz garaż)
+        System.out.println("--- Test Obsługi Błędów ---");
         Repository<Vehicle> repository = new FleetRepository();
 
-        // 2. Tworzymy dwa różne pojazdy
-        Vehicle car1 = new Car("Toyota", "Yaris", "KR 11111", Color.RED, 2020, LocalDate.now(), LocalDate.now());
-        Vehicle car2 = new Car("Volvo", "XC60", "WA 22222", Color.BLACK, 2022, LocalDate.now(), LocalDate.now());
+        // 1. Dodajemy poprawne auto
+        Vehicle auto1 = new Car("Opel", "Astra", "DW 12345", Color.SILVER, 2019, LocalDate.now(), LocalDate.now());
+        repository.save(auto1);
+        System.out.println("Dodano auto: DW 12345");
 
-        // 3. Zapisujemy je w repozytorium
-        repository.save(car1);
-        repository.save(car2);
-        System.out.println("Zapisano 2 pojazdy.");
-
-        // 4. Wyświetlamy listę wszystkich pojazdów (findAll)
-        System.out.println("\nLista pojazdów w systemie:");
-        for (Vehicle v : repository.findAll()) {
-            System.out.println(v);
+        // 2. Test duplikatu (to samo auto lub inna instancja z tą samą tablicą)
+        try {
+            Vehicle autoDuplicate = new Car("Opel", "Astra", "DW 12345", Color.BLACK, 2020, LocalDate.now(), LocalDate.now());
+            repository.save(autoDuplicate); // To powinno rzucić błąd
+        } catch (DuplicateRegistrationException e) {
+            System.out.println("BŁĄD ZŁAPANY: " + e.getMessage());
         }
 
-        // 5. Test usuwania
-        repository.delete(car1);
-        System.out.println("\nUsunięto Toyotę. Aktualna lista:");
-        for (Vehicle v : repository.findAll()) {
-            System.out.println(v);
+        // 3. Test przebiegu
+        try {
+            auto1.addMileage(new MileageEntry(LocalDate.now(), 100000)); // Startowy przebieg
+            System.out.println("Dodano przebieg 100.000");
+            
+            auto1.addMileage(new MileageEntry(LocalDate.now(), 90000));  // Próba cofnięcia licznika
+        } catch (InvalidMileageException e) {
+            System.out.println("BŁĄD ZŁAPANY: " + e.getMessage());
         }
     }
 }
