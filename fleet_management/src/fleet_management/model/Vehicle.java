@@ -77,4 +77,38 @@ public abstract class Vehicle {
     public String getModel() {
         return model;
     }
+    public List<MileageEntry> getMileageHistory() {
+        return mileageHistory;
+    }
+
+    public List<RepairEntry> getRepairHistory() {
+        return repairHistory;
+    }
+
+    public boolean isDeadlineSoon() {
+        LocalDate warningDate = LocalDate.now().plusDays(30);
+        // Zwraca true, jeśli ubezpieczenie LUB przegląd są przed datą ostrzegawczą
+        return insuranceValid.isBefore(warningDate) || inspectionValid.isBefore(warningDate);
+    }
+
+    public LocalDate getInsuranceValid() {
+        return insuranceValid;
+    }
+
+    public LocalDate getInspectionValid() {
+        return inspectionValid;
+    }
+
+    public void setInsuranceValid(LocalDate insuranceValid) {
+        this.insuranceValid = insuranceValid;
+    }
+
+    public void setInspectionValid(LocalDate inspectionValid) {
+        this.inspectionValid = inspectionValid;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+    
 }
