@@ -52,4 +52,8 @@ public abstract class Vehicle {
     public String toString() {
         return id + ". " + brand + " " + model + " [" + registrationNumber + "]";
     }
+
+    public long getId() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

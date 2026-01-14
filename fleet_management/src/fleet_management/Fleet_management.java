@@ -1,38 +1,38 @@
 package fleet_management;
 
-// Importujemy nasze klasy z modelu
-import fleet_management.model.*; 
+import fleet_management.model.*;
+import fleet_management.repositories.FleetRepository;
+import fleet_management.repositories.Repository;
 import java.time.LocalDate;
-import java.math.BigDecimal;
 
 public class Fleet_management {
 
     public static void main(String[] args) {
-        System.out.println("--- System Zarządzania Flotą - TEST ---");
+        System.out.println("--- Test Repozytorium ---");
 
-        // 1. Tworzymy przykładowy samochód
-        Vehicle auto1 = new Car(
-            "Ford", 
-            "Focus", 
-            "WA 12345", 
-            Color.BLUE, 
-            2018, 
-            LocalDate.of(2024, 6, 15), 
-            LocalDate.of(2025, 1, 10)
-        );
+        // 1. Tworzymy repozytorium (nasz garaż)
+        Repository<Vehicle> repository = new FleetRepository();
 
-        // 2. Przypisujemy kierowcę
-        User kierowca = new User("Adam", "Nowak", "123-456-789");
-        auto1.assignUser(kierowca);
+        // 2. Tworzymy dwa różne pojazdy
+        Vehicle car1 = new Car("Toyota", "Yaris", "KR 11111", Color.RED, 2020, LocalDate.now(), LocalDate.now());
+        Vehicle car2 = new Car("Volvo", "XC60", "WA 22222", Color.BLACK, 2022, LocalDate.now(), LocalDate.now());
 
-        // 3. Dodajemy historię (przebieg i naprawę)
-        auto1.addMileage(new MileageEntry(LocalDate.now(), 120000));
-        auto1.addRepair(new RepairEntry(LocalDate.now(), new BigDecimal("350.00"), "Wymiana klocków"));
+        // 3. Zapisujemy je w repozytorium
+        repository.save(car1);
+        repository.save(car2);
+        System.out.println("Zapisano 2 pojazdy.");
 
-        // 4. Wypisujemy dane w konsoli
-        System.out.println("Pojazd: " + auto1);
-        System.out.println("Typ: " + auto1.getVehicleType());
-        System.out.println("Użytkownik: " + kierowca);
-        System.out.println("--- Test zakończony pomyślnie ---");
+        // 4. Wyświetlamy listę wszystkich pojazdów (findAll)
+        System.out.println("\nLista pojazdów w systemie:");
+        for (Vehicle v : repository.findAll()) {
+            System.out.println(v);
+        }
+
+        // 5. Test usuwania
+        repository.delete(car1);
+        System.out.println("\nUsunięto Toyotę. Aktualna lista:");
+        for (Vehicle v : repository.findAll()) {
+            System.out.println(v);
+        }
     }
 }
