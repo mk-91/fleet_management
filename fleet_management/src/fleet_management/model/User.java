@@ -15,4 +15,8 @@ public class User {
     public String toString() {
         return firstName + " " + lastName + " (" + phoneNumber + ")";
     }
+
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+    public String getPhoneNumber() { return phoneNumber; }
 }

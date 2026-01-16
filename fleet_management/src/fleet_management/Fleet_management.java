@@ -8,16 +8,26 @@ import fleet_management.exceptions.*;
 import java.time.LocalDate;
 import java.math.BigDecimal; // Potrzebne do kosztów naprawy
 import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;1
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Fleet_management {
 
     private static Repository<Vehicle> repository = new FleetRepository();
     private static Scanner scanner = new Scanner(System.in);
+    private static final Path DATA_FILE = Paths.get("fleet_data.txt");
+
 
     public static void main(String[] args) {
-        // Dane startowe
-        repository.save(new Car("Toyota", "Corolla", "KR 12345", Color.SILVER, 2020, LocalDate.now(), LocalDate.now()));
-        
+        loadFromFile();   // Wczytywanie danych z .txt
+
         boolean running = true;
         while (running) {
             printMenu();
@@ -49,6 +59,7 @@ public class Fleet_management {
                     deleteVehicle();
                     break;
                 case "0":
+                    saveToFile();
                     running = false;
                     System.out.println("Zamykanie systemu...");
                     break;
@@ -125,6 +136,7 @@ public class Fleet_management {
                 
                 // Dodajemy wpis (walidacja jest w klasie Vehicle)
                 v.addMileage(new MileageEntry(LocalDate.now(), km));
+                saveToFile();
                 System.out.println("SUKCES: Przebieg zaktualizowany.");
             } catch (InvalidMileageException e) {
                 System.out.println("BŁĄD: " + e.getMessage());
@@ -146,6 +158,7 @@ public class Fleet_management {
                 BigDecimal cost = new BigDecimal(scanner.nextLine().replace(",", ".")); // zamiana przecinka na kropkę
                 
                 v.addRepair(new RepairEntry(LocalDate.now(), cost, desc));
+                saveToFile();
                 System.out.println("SUKCES: Naprawa zarejestrowana.");
             } catch (Exception e) {
                 System.out.println("BŁĄD: Niepoprawne dane (np. koszt).");
@@ -167,6 +180,7 @@ public class Fleet_management {
             
             Vehicle newCar = new Car(brand, model, reg, Color.OTHER, year, LocalDate.now().plusYears(1), LocalDate.now().plusYears(1));
             repository.save(newCar);
+            saveToFile();
             System.out.println("SUKCES: Dodano pojazd.");
         } catch (DuplicateRegistrationException e) {
             System.out.println("BŁĄD: " + e.getMessage());
@@ -180,6 +194,7 @@ public class Fleet_management {
         Vehicle v = findVehicleByReg();
         if (v != null) {
             repository.delete(v);
+            saveToFile();
             System.out.println("SUKCES: Pojazd usunięty.");
         }
     }
@@ -239,6 +254,7 @@ public class Fleet_management {
                         System.out.print("Podaj telefon: ");
                         String tel = scanner.nextLine();
                         v.assignUser(new User(imie, nazwisko, tel));
+                        saveToFile();
                         System.out.println("SUKCES: Zmieniono kierowcę.");
                         break;
                         
@@ -249,7 +265,7 @@ public class Fleet_management {
                         // Dla uproszczenia przedłużamy o rok od dzisiaj
                         v.setInsuranceValid(LocalDate.now().plusYears(1));
                         v.setInspectionValid(LocalDate.now().plusYears(1));
-                        
+                        saveToFile();
                         System.out.println("SUKCES: Terminy zostały odnowione (ważne przez rok od dziś).");
                         break;
                         
@@ -258,6 +274,7 @@ public class Fleet_management {
                         System.out.print("Wpisz nowy kolor (po angielsku): ");
                         String colorStr = scanner.nextLine().toUpperCase();
                         v.setColor(Color.valueOf(colorStr)); // Zamienia napis na Enum
+                        saveToFile();
                         System.out.println("SUKCES: Zmieniono kolor.");
                         break;
                         
@@ -274,6 +291,176 @@ public class Fleet_management {
             } catch (Exception e) {
                 System.out.println("BŁĄD: " + e.getMessage());
             }
+        }
+
+    }
+    private static void saveToFile() {
+        try {
+            Path parent = DATA_FILE.toAbsolutePath().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(DATA_FILE, StandardCharsets.UTF_8)) {
+                for (Vehicle v : repository.findAll()) {
+                    User u = v.getAssignedUser();
+
+                    String line = String.join("|",
+                            "VEHICLE",
+                            enc(v.getVehicleType().name()),
+                            enc(v.getBrand()),
+                            enc(v.getModel()),
+                            enc(v.getRegistrationNumber()),
+                            enc(v.getColor().name()),
+                            String.valueOf(v.getProductionYear()),
+                            v.getInsuranceValid().toString(),
+                            v.getInspectionValid().toString(),
+                            enc(u != null ? u.getFirstName() : ""),
+                            enc(u != null ? u.getLastName() : ""),
+                            enc(u != null ? u.getPhoneNumber() : "")
+                    );
+                    writer.write(line);
+                    writer.newLine();
+
+                    for (MileageEntry m : v.getMileageHistory()) {
+                        writer.write(String.join("|",
+                                "MILEAGE",
+                                m.getDate().toString(),
+                                String.valueOf(m.getMileage())
+                        ));
+                        writer.newLine();
+                    }
+
+                    for (RepairEntry r : v.getRepairHistory()) {
+                        writer.write(String.join("|",
+                                "REPAIR",
+                                r.getDate().toString(),
+                                r.getCost().toString(),
+                                enc(r.getDescription())
+                        ));
+                        writer.newLine();
+                    }
+
+                    writer.write("END");
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("BŁĄD: Nie udało się zapisać danych do pliku: " + e.getMessage());
+        }
+    }
+
+    private static void loadFromFile() {
+        repository = new FleetRepository();
+
+        if (!Files.exists(DATA_FILE)) {
+            return;
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(DATA_FILE, StandardCharsets.UTF_8)) {
+            String line;
+            Vehicle current = null;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+
+                String[] parts = line.split("\\|", -1);
+                String tag = parts[0];
+
+                switch (tag) {
+                    case "VEHICLE": {
+                        if (parts.length < 9) {
+                            System.out.println("UWAGA: Pomijam uszkodzony wpis VEHICLE: " + line);
+                            current = null;
+                            break;
+                        }
+
+                        VehicleType type = VehicleType.valueOf(dec(parts[1]));
+                        String brand = dec(parts[2]);
+                        String model = dec(parts[3]);
+                        String reg = dec(parts[4]);
+                        Color color = Color.valueOf(dec(parts[5]));
+                        int year = Integer.parseInt(parts[6]);
+                        LocalDate insurance = LocalDate.parse(parts[7]);
+                        LocalDate inspection = LocalDate.parse(parts[8]);
+
+                        switch (type) {
+                            case CAR:
+                                current = new Car(brand, model, reg, color, year, insurance, inspection);
+                                break;
+                            default:
+                                current = new Car(brand, model, reg, color, year, insurance, inspection);
+                                break;
+                        }
+
+                        if (parts.length >= 12) {
+                            String uFirst = dec(parts[9]);
+                            String uLast = dec(parts[10]);
+                            String uPhone = dec(parts[11]);
+                            if (!uFirst.isEmpty() || !uLast.isEmpty() || !uPhone.isEmpty()) {
+                                current.assignUser(new User(uFirst, uLast, uPhone));
+                            }
+                        }
+
+                        try {
+                            repository.save(current);
+                        } catch (DuplicateRegistrationException e) {
+                            System.out.println("UWAGA: Duplikat rejestracji w pliku, pomijam: " + reg);
+                            current = null;
+                        }
+                        break;
+                    }
+
+                    case "MILEAGE": {
+                        if (current != null && parts.length >= 3) {
+                            LocalDate date = LocalDate.parse(parts[1]);
+                            long km = Long.parseLong(parts[2]);
+                            try {
+                                current.addMileage(new MileageEntry(date, km));
+                            } catch (InvalidMileageException ignored) {}
+                        }
+                        break;
+                    }
+
+                    case "REPAIR": {
+                        if (current != null && parts.length >= 4) {
+                            LocalDate date = LocalDate.parse(parts[1]);
+                            BigDecimal cost = new BigDecimal(parts[2]);
+                            String desc = dec(parts[3]);
+                            current.addRepair(new RepairEntry(date, cost, desc));
+                        }
+                        break;
+                    }
+
+                    case "END":
+                        current = null;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("BŁĄD: Nie udało się wczytać danych z pliku: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("BŁĄD: Plik danych jest uszkodzony lub ma zły format: " + e.getMessage());
+        }
+    }
+
+    private static String enc(String s) {
+        try {
+            return URLEncoder.encode(s == null ? "" : s, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static String dec(String s) {
+        try {
+            return URLDecoder.decode(s == null ? "" : s, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
         }
     }
 }

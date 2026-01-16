@@ -110,5 +110,9 @@ public abstract class Vehicle {
     public void setColor(Color color) {
         this.color = color;
     }
+
+    public Color getColor() { return color; }
+    public int getProductionYear() { return productionYear; }
+    public User getAssignedUser() { return assignedUser; }
     
 }

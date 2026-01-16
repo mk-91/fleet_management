@@ -18,4 +18,7 @@ public class MileageEntry {
     public long getMileage() {
         return mileage;
     }
+
+    public LocalDate getDate() { return date; }
+
 }

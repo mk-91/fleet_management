@@ -17,4 +17,8 @@ public class RepairEntry {
     public String toString() {
         return date + " | Koszt: " + cost + " | " + description;
     }
+
+    public LocalDate getDate() { return date; }
+    public BigDecimal getCost() { return cost; }
+    public String getDescription() { return description; }
 }
