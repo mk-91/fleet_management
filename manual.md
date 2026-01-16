@@ -1,5 +1,5 @@
 # Fleet Management System
-## Instrukcja obsługi (manual użytkownika)
+## Instrukcja obsługi
 
 ---
 
@@ -169,8 +169,8 @@ Komunikaty o błędach wyświetlane są w konsoli.
 
 ## 10. Autor i przeznaczenie
 
-Projekt wykonany w celach edukacyjnych
-Autor: Jakub Bąk, Mateusz Kurzawa  
+Projekt wykonany w celach edukacyjnych  
+Autor: **Jakub Bąk, Mateusz Kurzawa**  
 Przedmiot: **Programowanie Obiektowe / Java**  
 Forma: **aplikacja konsolowa**
 
