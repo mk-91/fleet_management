@@ -18,12 +18,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Główna klasa aplikacji konsolowej do zarządzania flotą pojazdów.
+ *
+ * <p>Aplikacja udostępnia menu tekstowe do przeglądania i modyfikowania danych floty
+ * (pojazdy, historia przebiegów i napraw, kierowca, terminy OC/przeglądu).
+ * Dane są utrwalane w pliku tekstowym i wczytywane przy starcie programu.</p>
+ */
+
 public class Fleet_management {
 
     private static Repository<Vehicle> repository = new FleetRepository();
     private static Scanner scanner = new Scanner(System.in);
     private static final Path DATA_FILE = Paths.get("fleet_data.txt");
 
+    /**
+     * Punkt wejścia aplikacji.
+     *
+     * <p>Wczytuje dane z pliku, uruchamia pętlę menu i przy zakończeniu programu
+     * zapisuje dane do pliku.</p>
+     *
+     * @param args argumenty wiersza poleceń (nieużywane)
+     */
 
     public static void main(String[] args) {
         loadFromFile();   // Wczytywanie danych z .txt
@@ -294,6 +310,14 @@ public class Fleet_management {
         }
 
     }
+
+    /**
+     * Zapisuje aktualny stan repozytorium do pliku {@link #DATA_FILE}.
+     *
+     * <p>Format jest liniowy i oparty o znaczniki: {@code VEHICLE}, {@code MILEAGE},
+     * {@code REPAIR}, {@code END}. Pola tekstowe są kodowane metodą URL-encoding (UTF-8),
+     * aby bezpiecznie przechowywać znaki specjalne.</p>
+     */
     private static void saveToFile() {
         try {
             Path parent = DATA_FILE.toAbsolutePath().getParent();
@@ -350,6 +374,11 @@ public class Fleet_management {
         }
     }
 
+    /**
+     * Wczytuje dane z pliku {@link #DATA_FILE} i odbudowuje repozytorium w pamięci.
+     *
+     * <p>Jeśli plik nie istnieje, repozytorium pozostaje puste.</p>
+     */
     private static void loadFromFile() {
         repository = new FleetRepository();
 
@@ -448,6 +477,12 @@ public class Fleet_management {
         }
     }
 
+    /**
+     * Koduje tekst w formacie URL-encoding (UTF-8) na potrzeby zapisu do pliku.
+     *
+     * @param s tekst wejściowy
+     * @return tekst zakodowany lub pusty łańcuch w razie błędu
+     */
     private static String enc(String s) {
         try {
             return URLEncoder.encode(s == null ? "" : s, StandardCharsets.UTF_8);
@@ -456,6 +491,12 @@ public class Fleet_management {
         }
     }
 
+    /**
+     * Dekoduje tekst zakodowany metodą URL-encoding (UTF-8) odczytany z pliku.
+     *
+     * @param s tekst zakodowany
+     * @return tekst zdekodowany lub pusty łańcuch w razie błędu
+     */
     private static String dec(String s) {
         try {
             return URLDecoder.decode(s == null ? "" : s, StandardCharsets.UTF_8);
