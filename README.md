@@ -1,69 +1,177 @@
-# fleet_management
-Object-oriented programming project
+# Fleet Management System
+## Instrukcja obsługi
 
-## Temat projektu
-System do zarządzania flotą samochodów w przedsiębiorstwie
+---
 
-## Zespół
-Jakub Bąk, Mateusz Kurzawa
+## 1. Informacje ogólne
 
-## Wymagania funkcjonalne
-- Dodanie nowego pojazdu – możliwość zapisania danych: marka, model, numer rejestracyjny (unikalny), kolor, rok produkcji, termin ważności ubezpieczenia OC, termin ważności badań technicznych, dane użytkownika (imię, nazwisko, numer telefonu).
-- Wyświetlenie listy wszystkich pojazdów – w formie zestawienia podstawowych danych.
--	Wyświetlenie szczegółowych informacji o wybranym pojeździe – wszystkie dane wraz z historią.
--	Rejestrowanie historii przebiegu pojazdu – dodanie wpisu (data, stan licznika).
--	Rejestrowanie historii napraw – dodanie wpisu (data, koszt, opis).
--	Sprawdzanie krytycznych terminów – lista pojazdów, dla których OC lub badanie techniczne wygasają wkrótce (np. w ciągu 30 dni).
+**Fleet Management System** to konsolowa aplikacja napisana w języku Java, służąca do zarządzania flotą pojazdów. Program umożliwia:
 
-## Forma aplikacji
-Aplikacja konsolowa (tekstowa) z prostym menu, np.:
-1. Wyświetl listę pojazdów
-2. Pokaż szczegóły pojazdu
-3. Dodaj przebieg
-4. Dodaj naprawę
-5. Sprawdź krytyczne terminy
-6. Dodaj pojazd
-7. Aktualizuj pojazd
-8. Usuń pojazd
-0. Zakończ
+- dodawanie i usuwanie pojazdów,
+- przypisywanie użytkowników (kierowców),
+- rejestrowanie przebiegów,
+- rejestrowanie napraw,
+- przeglądanie aktualnego stanu floty,
+- trwały zapis danych do pliku tekstowego (`fleet_data.txt`).
 
-## Model obiektowy – propozycja klas
-1. Vehicle (abstrakcyjna klasa bazowa)
-  - marka, model, numer rejestracyjny (unikalny), kolor, rok produkcji
-  - termin ważności OC, termin ważności badań technicznych
-  - użytkownik (User)
-  - listy: `List<MileageEntry>`,`List<RepairEntry>`
-  - metoda abstrakcyjna: `getVehicleType()`
-  - metody: sprawdzenie krytycznych terminów, dodawanie wpisów historii
-2. Car (Samochód) – dziedziczy po Vehicle
-  - implementacja metody `getVehicleType()`
-3. User (Użytkownik pojazdu)
-  - imię, nazwisko, numer telefonu
-4. MileageEntry (Wpis przebiegu)
-  - data, przebieg
-  - walidacja poprawności przebiegu (nie mniejszy niż poprzedni)
-5. RepairEntry (Wpis naprawy)
-  - data, koszt, opis
-6. FleetManager (logika zarządzania flotą)
-  - dodaj / usuń / aktualizuj pojazd
-  - wyszukaj pojazd
-  - dodaj przebieg
-  - dodaj naprawę
-  - sprawdź krytyczne terminy
-7. Repository<T> (interfejs)
-  - metody: save, findById, findAll, delete
-8. FleetRepository
-  - implementuje `Repository<Vehicle>`
-  - przechowuje pojazdy w kolekcji
-  - statyczne pole do generowania identyfikatorów
-9. VehicleType (enum)
-  - np. CAR, TRUCK
-  - umożliwia łatwe rozszerzenie systemu o inne typy pojazdów
-10. Color (enum)
-  - predefiniowane kolory pojazdów
-11. DuplicateRegistrationException
-  - wyjątek zgłaszany przy próbie dodania pojazdu z istniejącym numerem rejestracyjnym
-12. InvalidMileageException
-  - wyjątek zgłaszany przy nieprawidłowym wpisie przebiegu
-13. DateUtils (klasa narzędziowa)
-  - statyczne metody do obsługi dat i sprawdzania terminów
+Dane są **automatycznie wczytywane przy starcie programu** oraz **zapisywane przy każdej modyfikacji i przy zamknięciu aplikacji**.
+
+---
+
+## 2. Wymagania systemowe
+
+- Java JDK **8 lub nowsza**
+- System operacyjny: Windows / Linux / macOS
+- Dostęp do konsoli (terminala)
+
+---
+
+## 3. Uruchomienie programu
+
+1. Skompiluj projekt (np. w IDE lub z linii poleceń):
+   ```bash
+   javac fleet_management/*.java
+   ```
+
+2. Uruchom aplikację:
+   ```bash
+   java fleet_management.Fleet_management
+   ```
+
+3. Przy pierwszym uruchomieniu plik `fleet_data.txt` zostanie utworzony automatycznie.
+
+---
+
+## 4. Trwałość danych
+
+- Wszystkie dane są przechowywane w pliku:
+  ```
+  fleet_data.txt
+  ```
+- Plik znajduje się w katalogu roboczym aplikacji.
+- **Nie należy edytować pliku ręcznie**, ponieważ może to spowodować błędy przy wczytywaniu danych.
+
+---
+
+## 5. Menu główne aplikacji
+
+Po uruchomieniu programu wyświetlane jest menu główne:
+
+```
+1. Wyświetl wszystkie pojazdy
+2. Dodaj nowy pojazd
+3. Usuń pojazd
+4. Dodaj przebieg
+5. Dodaj naprawę
+6. Przypisz użytkownika do pojazdu
+0. Zakończ program
+```
+
+Użytkownik wybiera opcję, wpisując odpowiednią cyfrę i zatwierdzając klawiszem ENTER.
+
+---
+
+## 6. Opis funkcjonalności
+
+### 6.1 Wyświetlanie pojazdów
+Opcja umożliwia wyświetlenie listy wszystkich pojazdów zapisanych w systemie wraz z:
+- danymi podstawowymi,
+- przypisanym użytkownikiem (jeśli istnieje),
+- historią przebiegów,
+- historią napraw.
+
+---
+
+### 6.2 Dodawanie nowego pojazdu
+Użytkownik podaje kolejno:
+- typ pojazdu,
+- markę,
+- model,
+- numer rejestracyjny,
+- kolor,
+- rok produkcji,
+- datę ważności ubezpieczenia,
+- datę ważności przeglądu technicznego.
+
+!!! Numer rejestracyjny musi być unikalny.
+
+---
+
+### 6.3 Usuwanie pojazdu
+Pojazd usuwany jest na podstawie numeru rejestracyjnego.
+
+!!! Operacja jest nieodwracalna.
+
+---
+
+### 6.4 Dodawanie przebiegu
+Użytkownik podaje:
+- numer rejestracyjny pojazdu,
+- datę,
+- stan licznika (km).
+
+!!! Nowy przebieg nie może być mniejszy niż ostatnio zapisany.
+
+---
+
+### 6.5 Dodawanie naprawy
+Użytkownik podaje:
+- numer rejestracyjny pojazdu,
+- datę naprawy,
+- koszt naprawy,
+- opis naprawy.
+
+---
+
+### 6.6 Przypisanie użytkownika do pojazdu
+Użytkownik podaje:
+- numer rejestracyjny pojazdu,
+- imię kierowcy,
+- nazwisko kierowcy,
+- numer telefonu.
+
+Każdy pojazd może mieć przypisanego jednego użytkownika.
+
+---
+
+## 7. Zamykanie programu
+
+Opcja:
+```
+0. Zakończ program
+```
+
+Powoduje:
+- zapis wszystkich danych do pliku `fleet_data.txt`,
+- bezpieczne zakończenie działania aplikacji.
+
+---
+
+## 8. Obsługa błędów
+
+Program automatycznie obsługuje m.in.:
+- duplikaty numerów rejestracyjnych,
+- błędne formaty dat,
+- niepoprawne wartości liczbowe,
+- brak pojazdu o podanym numerze rejestracyjnym.
+
+Komunikaty o błędach wyświetlane są w konsoli.
+
+---
+
+## 9. Uwagi końcowe
+
+- Program jest przeznaczony do obsługi z poziomu konsoli.
+- Dane są zapisywane lokalnie – brak integracji sieciowej.
+- Aplikacja może być dalej rozbudowywana (GUI, baza danych, eksport CSV).
+
+---
+
+## 10. Autor i przeznaczenie
+
+Projekt wykonany w celach edukacyjnych  
+Autor: **Jakub Bąk, Mateusz Kurzawa**  
+Przedmiot: **Programowanie Obiektowe / Java**  
+Forma: **aplikacja konsolowa**
+
+---
